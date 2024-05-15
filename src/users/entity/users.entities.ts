@@ -1,12 +1,15 @@
 import { Address } from 'src/address/entity/address.entities';
-import { Note } from 'src/note/entity/note.entity';
-import { Observation } from 'src/observation/entity/observation.entities';
-import { Pharmaceuticals } from 'src/pharmaceuticals/entity/pharmaceuticals.entities';
-import { Treatment } from 'src/treatment/entity/treatment.entities';
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
-@Entity({ name: 'Users' })
-export class Users {
+@Entity({ name: 'users' })
+export class users {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -30,36 +33,16 @@ export class Users {
 
   @Column({ name: 'cell_phone', nullable: false })
   cell_phone: string;
+  @Column({ name: 'password', nullable: false })
+  password: string;
 
-  @OneToOne(() => Pharmaceuticals, (pharma) => pharma.user, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
-  pharma: Pharmaceuticals;
-
-  @OneToOne(() => Treatment, (treatment) => treatment.user, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
-  treatment: Treatment;
-
-  @OneToOne(() => Observation, (observation) => observation.user, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
-  observation: Observation;
-
-  @OneToOne(() => Note, (note) => note.user, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
-  note: Note;
-
-  @OneToOne(() => Address, (address) => address.user, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
+  @OneToOne(() => Address, (address) => address.user)
   address: Address;
+  @CreateDateColumn({ name: 'create_at' })
+  created_at: Date;
+
+  @UpdateDateColumn({ name: 'update_at' })
+  updated_at: Date;
 
   constructor(
     props: {
@@ -70,6 +53,8 @@ export class Users {
       bith_day: string;
       age: string;
       cell_phone: string;
+      created_at: Date;
+      updated_at: Date;
     },
     id?: string,
   ) {

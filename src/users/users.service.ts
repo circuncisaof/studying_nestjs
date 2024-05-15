@@ -1,31 +1,36 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { AddressService } from 'src/address/address.service';
 import { Repository } from 'typeorm';
 import { CreateDto } from './dto/create-users.dto';
 import { UpdateUsersDto } from './dto/update-users.dto';
-import { Users } from './entity/users.entities';
-
+import { users } from './entity/users.entities';
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(Users)
-    private readonly usersRepo: Repository<Users>,
+    @InjectRepository(users)
+    private readonly usersRepo: Repository<users>,
+    private readonly address: AddressService,
   ) {}
 
-  create_users(createUSers: CreateDto) {
-    const users = new Users(createUSers);
-    if (!createUSers.email || !createUSers.name) {
-      throw new Error('Ja exite esse usuario');
-    }
+  async create_users(createUSers: CreateDto): Promise<users> {
+    // const users = await this.getEmailFind(createUSers.id);
+    // if (users) {
+    //   throw new Error('Ja exite esse usuario');
+    // }
 
-    return this.usersRepo.save(users);
+    return this.usersRepo.save(createUSers);
   }
-
-  getAllUsers() {
+  async getEmailFind(user_id: string): Promise<users> {
+    return await this.usersRepo.findOne({
+      where: { id: user_id },
+    });
+  }
+  async getAllUsers(): Promise<users[]> {
     return this.usersRepo.find();
   }
 
-  getUsers(id: string) {
+  async getUsers(id: string): Promise<users> {
     return this.usersRepo.findOneOrFail({
       where: { id: id },
       relations: ['address', 'note', 'observation', 'pharma', 'treatment'],
@@ -33,18 +38,27 @@ export class UsersService {
   }
 
   async updateUsers(updateUsers: UpdateUsersDto, id: string) {
-    const update_user_id = await this.usersRepo.findOneOrFail({
-      where: { id },
-    });
+    const data = await this.getEmailFind(id);
 
-    updateUsers.email && (update_user_id.name = updateUsers.name);
-    updateUsers.email && (update_user_id.email = updateUsers.email);
-    if (!update_user_id.id) {
-      throw new NotFoundException(update_user_id);
+    if (!data) {
+      new Error('User not found');
     }
 
-    Object.assign(update_user_id.id, updateUsers);
-    return this.usersRepo.save(update_user_id);
+    await this.address.update_address(id, updateUsers.address);
+
+    return await this.usersRepo
+      .createQueryBuilder()
+      .update<users>(users, {
+        name: updateUsers.name,
+        email: updateUsers.email,
+        rg: updateUsers.rg,
+        cpf: updateUsers.cpf,
+        bith_day: updateUsers.bith_day,
+        age: updateUsers.age,
+        cell_phone: updateUsers.cell_phone,
+      })
+      .where({ id: id })
+      .execute();
   }
 
   deleteUsers(id: string) {

@@ -3,7 +3,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class CreateTableAddress1715352966275 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     queryRunner.query(`
-        CREATE TABLE Address(
+        CREATE TABLE public.address(
             id character NOT NULL,
             address character varying NOT NULL,
             n_address  character varying NOT NULL unique,
@@ -17,7 +17,7 @@ export class CreateTableAddress1715352966275 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     queryRunner.query(`
-    drop table Address;
+    drop table  public.address;
     `);
   }
 }

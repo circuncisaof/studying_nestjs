@@ -20,22 +20,61 @@ export class AddressService {
     return this.addressRepo.find();
   }
 
-  find_address_id(id: string) {
-    return this.addressRepo.findOneOrFail({
-      where: { id },
+  find_address_id(user_id: string) {
+    return this.addressRepo.findOne({
+      where: { userId: user_id },
     });
   }
 
-  async update_address(id: string, updateAddress: UpdateAddressDto) {
-    const update_address_user = await this.addressRepo.findOneOrFail({
-      where: { id },
-    });
+  async create_new_address(user_id: string, updateAddress: UpdateAddressDto) {
+    console.log('create_new_address:', user_id);
 
-    Object.assign(update_address_user.id, updateAddress);
-    return this.addressRepo.save(update_address_user);
+    const data = await this.addressRepo
+      .createQueryBuilder()
+      .update<Address>(Address, {
+        userId: user_id,
+        cep: updateAddress.cep,
+        city: updateAddress.city,
+        number_home: updateAddress.number_home,
+        state: updateAddress.state,
+        complement: updateAddress.complement,
+        place_public: updateAddress.place_public,
+      })
+      .execute();
+
+    console.log('create_new_address update address:', updateAddress);
+    console.log('updateAddress.userId', user_id);
+    console.log(data);
+
+    return data;
+  }
+
+  async update_address(user_id: string, updateAddress: UpdateAddressDto) {
+    const update_address_user = await this.find_address_id(user_id);
+    console.log(!update_address_user);
+    if (!update_address_user) {
+      console.log(user_id);
+      console.log(updateAddress);
+
+      await this.create_new_address(user_id, updateAddress);
+    }
+    // console.log('user_id:', user_id, 'updateAddress', updateAddress);
+    // return await this.addressRepo
+    //   .createQueryBuilder()
+    //   .update(Address)
+    //   .set({
+    //     cep: updateAddress.cep,
+    //     city: updateAddress.city,
+    //     complement: updateAddress.complement,
+    //     number_home: updateAddress.number_home,
+    //     state: updateAddress.state,
+    //     place_public: updateAddress.place_public,
+    //   })
+    //   .where({ userId: user_id })
+    //   .execute();
   }
 
   delete_adrress(id: string) {
-    return `this action updates a #${id} users`;
+    return this.addressRepo.delete(id);
   }
 }

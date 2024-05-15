@@ -24,4 +24,7 @@ export class CreateDto {
 
   @IsString()
   cell_phone: string;
+
+  @IsString()
+  password: string;
 }

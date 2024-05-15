@@ -33,10 +33,13 @@ export class Address {
   @Column({ name: 'cep', nullable: false })
   cep: string;
 
-  @OneToOne(() => Users, (user) => user.address)
+  @OneToOne(() => Users, (user) => user.address, {
+    cascade: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: Users;
-
   constructor(
     props: {
       place_public: string;
@@ -45,9 +48,8 @@ export class Address {
       city: string;
       state: string;
       cep: string;
-      cell_phone: string;
     },
-    id?: string,
+    id: string,
   ) {
     Object.assign(this, props);
     this.id = id;
